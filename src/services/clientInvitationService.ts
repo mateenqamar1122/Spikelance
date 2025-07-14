@@ -2,17 +2,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 import { ClientInvitation } from "@/types/database";
+import { generatePassword } from "@/lib/utils";
 
 export const createClientInvitation = async (
   projectId: string,
   email: string,
-  clientId: string
+  clientId: string,
+  password?: string
 ): Promise<ClientInvitation | null> => {
   try {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('Not authenticated');
 
+    // Check for existing invitation with the same email
+    const { data: existingInvitation } = await supabase
+      .from('client_invitations')
+      .select('temp_password')
+      .eq('email', email)
+      .single();
+
     const token = uuidv4();
+    const generatedPassword = password || generatePassword(12);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days from now
 
     const { data, error } = await supabase
@@ -24,7 +34,8 @@ export const createClientInvitation = async (
         token,
         invited_by: userData.user.id,
         expires_at: expiresAt,
-        status: 'pending'
+        status: 'pending',
+        temp_password: generatedPassword
       })
       .select()
       .single();
@@ -48,20 +59,25 @@ export const createClientInvitation = async (
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-              You've been invited to collaborate on a project
+              Welcome to ${projectName}
             </h1>
             <p style="color: #555; font-size: 16px;">
               You have been invited to collaborate on <strong>${projectName}</strong>.
             </p>
             <p style="color: #555; font-size: 16px;">
-              Click the button below to accept the invitation:
+              Here are your login credentials for the client portal:
             </p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${window.location.origin}/accept-invitation?token=${token}" 
-                 style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-                Accept Invitation
-              </a>
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0;">
+              <p style="color: #555; font-size: 16px; margin: 0;">
+                <strong>Email:</strong> ${email}
+              </p>
+              <p style="color: #555; font-size: 16px; margin: 10px 0 0 0;">
+                <strong>Password:</strong> ${generatedPassword}
+              </p>
             </div>
+            <p style="color: #555; font-size: 16px;">
+              Please use these credentials to access the client portal.
+            </p>
             <p style="color: #777; font-size: 14px;">This invitation will expire in 7 days.</p>
           </div>
         `,
@@ -107,19 +123,35 @@ export const getProjectInvitations = async (projectId: string): Promise<ClientIn
   }
 };
 
-export const verifyInvitation = async (token: string): Promise<boolean> => {
+export const verifyInvitation = async (token: string): Promise<{ isValid: boolean; projectId?: string; projectName?: string; clientEmail?: string; projectDetails?: any }> => {
   try {
-    const { data, error } = await supabase
+    const { data: invitation, error } = await supabase
       .from('client_invitations')
-      .select('*')
+      .select(`
+        *,
+        project:projects(id, name, description, deadline, status)
+      `)
       .eq('token', token)
       .single();
 
-    if (error) throw error;
-    if (!data) return false;
+    if (error || !invitation) return { isValid: false };
 
-    const isExpired = new Date(data.expires_at) < new Date();
-    return !isExpired && data.status === 'pending';
+    const isExpired = new Date(invitation.expires_at) < new Date();
+    const isValid = !isExpired && invitation.status === 'pending';
+
+    if (!isValid) return { isValid: false };
+
+    return {
+      isValid: true,
+      projectId: invitation.project_id,
+      projectName: invitation.project.name,
+      clientEmail: invitation.email,
+      projectDetails: {
+        description: invitation.project.description,
+        deadline: invitation.project.deadline,
+        status: invitation.project.status
+      }
+    };
   } catch (error) {
     console.error('Error verifying invitation:', error);
     return false;

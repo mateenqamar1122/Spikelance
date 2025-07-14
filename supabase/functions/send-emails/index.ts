@@ -47,7 +47,7 @@ serve(async (req) => {
 
     // Parse request body
     const requestData = await req.json();
-    const { to, subject, html, from = "Lovable <onboarding@resend.dev>", ...restOptions }: EmailRequest = requestData;
+    const { to, subject, html, from = "Spikelance <onboarding@resend.dev>", ...restOptions }: EmailRequest = requestData;
 
     // Validate required fields
     if (!to || !subject || !html) {

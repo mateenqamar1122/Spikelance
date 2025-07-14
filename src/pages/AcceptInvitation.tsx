@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InvitationDetails {
   isValid: boolean;
@@ -25,7 +26,7 @@ const AcceptInvitation = () => {
   const token = searchParams.get("token");
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signIn } = useAuth();
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
@@ -49,17 +50,34 @@ const AcceptInvitation = () => {
   const acceptInvitationMutation = useMutation({
     mutationFn: async (credentials: { email: string; password: string }) => {
       try {
-        const response = await fetch(`/api/invitations/accept/${token}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(credentials),
+        const { data: invitationData, error: invitationError } = await supabase
+          .from('client_invitations')
+          .select('temp_password, project_id')
+          .eq('token', token)
+          .single();
+
+        if (invitationError || !invitationData) throw new Error('Invalid invitation');
+        if (credentials.password !== invitationData.temp_password) throw new Error('Invalid password');
+
+        // Sign up the client with Supabase auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: credentials.email,
+          password: credentials.password
         });
-        if (!response.ok) throw new Error("Failed to accept invitation");
-        return response.json();
+
+        if (authError) throw authError;
+
+        // Update invitation status
+        const { error: updateError } = await supabase
+          .from('client_invitations')
+          .update({ status: 'accepted' })
+          .eq('token', token);
+
+        if (updateError) throw updateError;
+
+        return { projectId: invitationData.project_id };
       } catch (error) {
-        console.error("Error accepting invitation:", error);
+        console.error('Error accepting invitation:', error);
         throw error;
       }
     },
@@ -71,8 +89,8 @@ const AcceptInvitation = () => {
       
       // Login with the provided credentials
       try {
-        await login(credentials.email, credentials.password);
-        navigate("/projects");
+        await signIn(credentials.email, credentials.password);
+        navigate(`/projects/${data.projectId}`);
       } catch (error) {
         console.error("Error logging in:", error);
         toast({

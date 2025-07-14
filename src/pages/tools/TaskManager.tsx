@@ -18,6 +18,7 @@ import {
   Trash2,
   Edit
 } from "lucide-react";
+import TaskDueDateReminder from "@/components/productivity/TaskDueDateReminder";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +77,7 @@ import TaskList from "@/components/productivity/TaskList";
 import TaskForm from "@/components/productivity/TaskForm";
 import { Skeleton } from "@/components/ui/skeleton";
 import TaskFilter, { FilterOption } from "@/components/productivity/TaskFilter";
+import TaskStats from "@/components/productivity/TaskStats";
 
 // Custom column interface
 interface CustomColumn {
@@ -500,6 +502,12 @@ const TaskManager = () => {
           </HoverCard>
         </div>
       </div>
+
+      {/* Task Due Date Reminder */}
+      <TaskDueDateReminder 
+        tasks={Object.values(tasksData || {}).flat()}
+        onTaskClick={(task) => openEditTaskDialog(task)}
+      />
 
       {/* Filter Bar */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-gradient-to-r from-card/80 to-card/50 p-4 rounded-xl border border-brand-blue/10 shadow-md backdrop-blur-sm animate-fade-in-up" style={{animationDelay: '0.1s'}}>
@@ -962,6 +970,11 @@ const TaskManager = () => {
       </div>
       
       {/* Add Task Dialog */}
+      {/* Task Statistics */}
+      <div className="mb-6">
+        <TaskStats tasks={allTags} />
+      </div>
+
       <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
         <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>

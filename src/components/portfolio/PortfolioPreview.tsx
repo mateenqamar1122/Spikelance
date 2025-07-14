@@ -1,6 +1,6 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Linkedin, Mail, Phone, Globe, Twitter, MapPin, Calendar } from "lucide-react";
+import { ExternalLink, Github, Linkedin, Mail, Phone, Globe, Twitter, MapPin, Calendar, Download } from "lucide-react";
 import { Portfolio, Experience, Skill, PortfolioProject, PortfolioService } from "@/types/portfolio";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -385,99 +385,148 @@ const PortfolioPreview: React.FC<PortfolioPreviewProps> = ({
     }
   };
 
+  // Animation effect for scroll reveal
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = document.querySelectorAll('.animate-on-scroll');
+      
+      sections.forEach(section => {
+        const sectionTop = section.getBoundingClientRect().top;
+        const windowHeight = window.innerHeight;
+        
+        if (sectionTop < windowHeight * 0.75) {
+          section.classList.add('animate-visible');
+        }
+      });
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div ref={portfolioRef} className={`min-h-screen ${theme.bg} ${theme.text}`}>
-      {/* Banner at the top of the page */}
+    <div ref={portfolioRef} className={`min-h-screen ${theme.bg} ${theme.text} font-sans`}>
+      {/* Banner with parallax effect */}
       {portfolio.banner_url && (
-        <div id="portfolio-banner" className="w-full h-64 md:h-80 relative overflow-hidden">
-          <img 
-            src={portfolio.banner_url} 
-            alt="Portfolio Banner" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+        <div id="portfolio-banner" className="w-full h-[50vh] md:h-[60vh] relative overflow-hidden">
+          <div className="absolute inset-0 bg-fixed" style={{
+            backgroundImage: `url(${portfolio.banner_url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            transform: 'translateZ(0)', // Hardware acceleration
+          }}></div>
+          <div className="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-[2px]"></div>
+          
+          {/* Optional floating download button */}
+          <div className="absolute bottom-6 right-6 z-10">
+            {/* <Button 
+              onClick={downloadPDF} 
+              size="sm" 
+              className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg rounded-full px-4"
+            >
+              <Download className="w-4 h-4 mr-2" /> Download PDF
+            </Button> */}
+          </div>
         </div>
       )}
       
-      {/* Header section */}
-      <header id="portfolio-header" className={`${theme.headerBg} py-16 px-4 relative ${!portfolio.banner_url ? 'pt-20' : '-mt-16'}`}>
-        <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col items-center text-center mt-6">
-            {portfolio.logo_url && (
-              <div className="mb-6">
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white shadow-xl mx-auto">
-                  <img 
-                    src={portfolio.logo_url} 
-                    alt="Logo" 
-                    className="w-full h-full object-cover"
-                  />
+      {/* Header section with glass morphism effect */}
+      <header 
+        id="portfolio-header" 
+        className={`relative ${!portfolio.banner_url ? 'pt-24' : '-mt-24'} z-10`}
+      >
+        <div className={`${portfolio.banner_url ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-xl' : theme.headerBg} 
+          py-16 px-6 rounded-t-3xl mx-4 md:mx-8 lg:mx-auto lg:max-w-6xl`}>
+          <div className="container mx-auto max-w-5xl">
+            <div className="flex flex-col items-center text-center">
+              {portfolio.logo_url && (
+                <div className="mb-8">
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white shadow-2xl mx-auto ring-4 ring-gray-50 dark:ring-gray-800 transform hover:scale-105 transition-transform duration-300">
+                    <img 
+                      src={portfolio.logo_url} 
+                      alt="Logo" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-            
-            <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-600">{portfolio.name}</h1>
-              <h2 className="text-xl md:text-2xl mt-2 font-medium">{portfolio.title}</h2>
-              {portfolio.subtitle && <p className="mt-2 text-gray-600">{portfolio.subtitle}</p>}
+              )}
               
-              <div className="flex flex-wrap justify-center gap-2 mt-6">
-                {portfolio.contact?.email && (
-                  <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm`} asChild>
-                    <a href={`mailto:${portfolio.contact.email}`}>
-                      <Mail className="w-4 h-4 mr-1" /> Email
-                    </a>
-                  </Button>
+              <div className="text-center space-y-3">
+                <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300">
+                  {portfolio.name}
+                </h1>
+                
+                <h2 className="text-xl md:text-2xl font-medium text-gray-700 dark:text-gray-300">
+                  {portfolio.title}
+                </h2>
+                
+                {portfolio.subtitle && (
+                  <p className="mt-2 text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                    {portfolio.subtitle}
+                  </p>
                 )}
-                {portfolio.contact?.phone && (
-                  <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm`} asChild>
-                    <a href={`tel:${portfolio.contact.phone}`}>
-                      <Phone className="w-4 h-4 mr-1" /> Call
-                    </a>
-                  </Button>
-                )}
-                {portfolio.contact?.website && (
-                  <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm`} asChild>
-                    <a href={portfolio.contact.website} target="_blank" rel="noopener noreferrer">
-                      <Globe className="w-4 h-4 mr-1" /> Website
-                    </a>
-                  </Button>
-                )}
-                {portfolio.contact?.linkedin && (
-                  <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm`} asChild>
-                    <a href={`https://linkedin.com/in/${portfolio.contact.linkedin}`} target="_blank" rel="noopener noreferrer">
-                      <Linkedin className="w-4 h-4 mr-1" /> LinkedIn
-                    </a>
-                  </Button>
-                )}
-                {portfolio.contact?.twitter && (
-                  <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm`} asChild>
-                    <a href={`https://twitter.com/${portfolio.contact.twitter}`} target="_blank" rel="noopener noreferrer">
-                      <Twitter className="w-4 h-4 mr-1" /> Twitter
-                    </a>
-                  </Button>
-                )}
-                {portfolio.contact?.github && (
-                  <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm`} asChild>
-                    <a href={`https://github.com/${portfolio.contact.github}`} target="_blank" rel="noopener noreferrer">
-                      <Github className="w-4 h-4 mr-1" /> GitHub
-                    </a>
-                  </Button>
-                )}
+                
+                <div className="flex flex-wrap justify-center gap-3 mt-8">
+                  {portfolio.contact?.email && (
+                    <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm rounded-full px-4 hover:scale-105 transition-transform`} asChild>
+                      <a href={`mailto:${portfolio.contact.email}`}>
+                        <Mail className="w-4 h-4 mr-2" /> Email
+                      </a>
+                    </Button>
+                  )}
+                  {portfolio.contact?.phone && (
+                    <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm rounded-full px-4 hover:scale-105 transition-transform`} asChild>
+                      <a href={`tel:${portfolio.contact.phone}`}>
+                        <Phone className="w-4 h-4 mr-2" /> Call
+                      </a>
+                    </Button>
+                  )}
+                  {portfolio.contact?.website && (
+                    <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm rounded-full px-4 hover:scale-105 transition-transform`} asChild>
+                      <a href={portfolio.contact.website} target="_blank" rel="noopener noreferrer">
+                        <Globe className="w-4 h-4 mr-2" /> Website
+                      </a>
+                    </Button>
+                  )}
+                  {portfolio.contact?.linkedin && (
+                    <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm rounded-full px-4 hover:scale-105 transition-transform`} asChild>
+                      <a href={`https://linkedin.com/in/${portfolio.contact.linkedin}`} target="_blank" rel="noopener noreferrer">
+                        <Linkedin className="w-4 h-4 mr-2" /> LinkedIn
+                      </a>
+                    </Button>
+                  )}
+                  {portfolio.contact?.twitter && (
+                    <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm rounded-full px-4 hover:scale-105 transition-transform`} asChild>
+                      <a href={`https://twitter.com/${portfolio.contact.twitter}`} target="_blank" rel="noopener noreferrer">
+                        <Twitter className="w-4 h-4 mr-2" /> Twitter
+                      </a>
+                    </Button>
+                  )}
+                  {portfolio.contact?.github && (
+                    <Button variant="outline" size="sm" className={`${theme.buttonOutline} shadow-sm rounded-full px-4 hover:scale-105 transition-transform`} asChild>
+                      <a href={`https://github.com/${portfolio.contact.github}`} target="_blank" rel="noopener noreferrer">
+                        <Github className="w-4 h-4 mr-2" /> GitHub
+                      </a>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </header>
       
-      <div className="container mx-auto px-4 py-12 max-w-6xl">
+      <div className="container mx-auto px-6 py-16 max-w-6xl">
         {/* About */}
-        <section id="about-section" className="mb-20">
-          <div className="flex items-center mb-8">
-            <div className={`h-1 w-12 ${theme.accent} mr-4 rounded-full`}></div>
-            <h2 className="text-3xl font-bold tracking-tight">About Me</h2>
+        <section id="about-section" className="mb-24 animate-on-scroll opacity-0 transition-all duration-700 transform translate-y-8">
+          <div className="flex items-center mb-10">
+            <div className={`h-1.5 w-16 ${theme.accent} mr-4 rounded-full`}></div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">About Me</h2>
           </div>
-          <div className={`p-8 rounded-xl ${theme.card} ${theme.cardHover} transition-all duration-300`}>
-            <p className="whitespace-pre-wrap leading-relaxed">{portfolio.bio}</p>
+          <div className={`p-10 rounded-2xl ${theme.card} ${theme.cardHover} transition-all duration-500 shadow-lg border border-gray-100/80 dark:border-gray-800/80 backdrop-blur-sm`}>
+            <p className="whitespace-pre-wrap leading-relaxed text-gray-700 dark:text-gray-300 text-lg">{portfolio.bio}</p>
           </div>
         </section>
         

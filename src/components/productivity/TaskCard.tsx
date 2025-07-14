@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, formatDistance } from "date-fns";
 import {
   MoreHorizontal, 
   Edit, 
@@ -12,7 +12,10 @@ import {
   Tag,
   Link2,
   Repeat,
-  GripVertical
+  GripVertical,
+  Timer,
+  Lock,
+  Copy
 } from "lucide-react";
 import { Task } from "@/services/productivityService";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -65,7 +68,7 @@ export default function TaskCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "p-4 rounded-lg border mb-2 transition-all",
+        "p-4 rounded-lg border mb-2",
         isDragging ? "bg-accent shadow-md" : "bg-card",
         task.status === "completed" ? "border-dashed border-green-500 bg-green-50/30 dark:bg-green-950/10" : "border-border"
       )}
@@ -119,7 +122,28 @@ export default function TaskCard({
               {task.time_estimate && (
                 <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 inline-flex items-center text-xs">
                   <Clock className="h-3 w-3 mr-1" />
-                  {task.time_estimate}m
+                  {task.time_estimate}m est.
+                </Badge>
+              )}
+              
+              {task.time_spent && (
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 inline-flex items-center text-xs">
+                  <Timer className="h-3 w-3 mr-1" />
+                  {task.time_spent}m spent
+                </Badge>
+              )}
+
+              {task.dependencies && task.dependencies.length > 0 && (
+                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 inline-flex items-center text-xs">
+                  <Lock className="h-3 w-3 mr-1" />
+                  {task.dependencies.length} deps
+                </Badge>
+              )}
+
+              {task.template_name && (
+                <Badge variant="outline" className="bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400 inline-flex items-center text-xs">
+                  <Copy className="h-3 w-3 mr-1" />
+                  {task.template_name}
                 </Badge>
               )}
               
@@ -146,7 +170,7 @@ export default function TaskCard({
           </div>
         </div>
 
-        <div className={cn("transition-opacity", isHovered ? "opacity-100" : "opacity-0")}>
+        <div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">

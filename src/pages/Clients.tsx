@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { 
   Users, 
   UserPlus, 
@@ -38,7 +39,6 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
 import { Client } from "@/types/database";
 import { getClients, createClient, updateClient, deleteClient } from "@/services/clientService";
 import ClientForm from "@/components/ClientForm";
@@ -51,94 +51,143 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 
 const Clients = () => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Add missing state declarations
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [isAddClientOpen, setIsAddClientOpen] = useState(false);
   const [isEditClientOpen, setIsEditClientOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [isDetailView, setIsDetailView] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Add useEffect to fetch clients
   useEffect(() => {
-    loadClients();
+    const fetchClientsData = async () => {
+      try {
+        const data = await getClients();
+        setClients(data);
+      } catch (error: any) {
+        toast.error(error.message || "Failed to fetch clients");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchClientsData();
   }, []);
 
-  const loadClients = async () => {
-    setIsLoading(true);
+  // Add useEffect for filtering clients
+  useEffect(() => {
+    let filtered = [...clients];
+    
+    if (searchQuery) {
+      filtered = filtered.filter(client => 
+        client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        client.company?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(client => client.status === statusFilter);
+    }
+
+    setFilteredClients(filtered);
+  }, [clients, searchQuery, statusFilter]);
+
+  // Add missing handler functions
+  const handleViewClientDetail = (client: Client) => {
+    setSelectedClient(client);
+    // Add your view detail logic here
+  };
+
+  const handleAddClient = async (clientData: Omit<Client, "id">) => {
     try {
-      const data = await getClients();
-      setClients(data);
-    } catch (error) {
-      console.error("Error loading clients:", error);
-      toast.error("Failed to load clients");
+      await createClient(clientData);
+      toast.success("Client added successfully");
+      setIsAddClientOpen(false);
+      // Refresh clients list
+      const updatedClients = await getClients();
+      setClients(updatedClients);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to add client");
+    }
+  };
+
+  const handleEditClient = async (clientData: Client) => {
+    try {
+      await updateClient(clientData);
+      toast.success("Client updated successfully");
+      setIsEditClientOpen(false);
+      // Refresh clients list
+      const updatedClients = await getClients();
+      setClients(updatedClients);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update client");
+    }
+  };
+
+  const handleDeleteClient = async (clientId: string) => {
+    if (!confirm("Are you sure you want to delete this client?")) return;
+
+    try {
+      await deleteClient(clientId);
+      toast.success("Client deleted successfully");
+      // Refresh clients list
+      const updatedClients = await getClients();
+      setClients(updatedClients);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete client");
+    }
+  };
+
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Create invitation record
+      const { data, error } = await supabase
+        .from('client_invitations')
+        .insert({
+          email: email,
+          freelancer_id: user.id,
+          token: crypto.randomUUID(),
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days expiry
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Send invitation email using Supabase Edge Function
+      const { error: emailError } = await supabase.functions.invoke('send-client-invitation', {
+        body: {
+          email: email,
+          invitationToken: data.token,
+          freelancerName: user.user_metadata?.full_name || 'Your Freelancer'
+        }
+      });
+
+      if (emailError) throw emailError;
+
+      toast.success("Invitation sent successfully!");
+      setEmail("");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send invitation");
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleAddClient = async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => {
-    const newClient = await createClient(clientData);
-    if (newClient) {
-      setClients([newClient, ...clients]);
-      setIsAddClientOpen(false);
-    }
-  };
-
-  const handleEditClient = async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => {
-    if (!selectedClient) return;
-    
-    const updatedClient = await updateClient(selectedClient.id, clientData);
-    if (updatedClient) {
-      setClients(clients.map(client => 
-        client.id === updatedClient.id ? updatedClient : client
-      ));
-      setIsEditClientOpen(false);
-      
-      // If in detail view, update the selected client
-      if (isDetailView) {
-        setSelectedClient(updatedClient);
-      }
-    }
-  };
-
-  const handleDeleteClient = async (id: string) => {
-    const success = await deleteClient(id);
-    if (success) {
-      setClients(clients.filter(client => client.id !== id));
-    }
-  };
-
-  const handleViewClientDetail = (client: Client) => {
-    setSelectedClient(client);
-    setIsDetailView(true);
-  };
-
-  const filteredClients = clients.filter(client => 
-    (searchQuery === "" || 
-      client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (client.company && client.company.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      client.email.toLowerCase().includes(searchQuery.toLowerCase())
-    ) &&
-    (statusFilter === "all" || client.status === statusFilter)
-  );
-
-  if (isDetailView && selectedClient) {
-    return (
-      <ClientDetail
-        client={selectedClient}
-        onEdit={() => setIsEditClientOpen(true)}
-        onBack={() => setIsDetailView(false)}
-        onDeleted={() => {
-          setIsDetailView(false);
-          loadClients();
-        }}
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">

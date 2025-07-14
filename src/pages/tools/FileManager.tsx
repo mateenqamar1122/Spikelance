@@ -825,7 +825,7 @@ const FileManager = () => {
             )}
             
             {/* Storage Stats */}
-            <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+            {/* <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Storage Overview</h2>
@@ -890,7 +890,7 @@ const FileManager = () => {
                 </div>
               </div>
             </div>
-            
+             */}
             {/* File Toolbar */}
             <div className="mb-4">
               <FileToolbar

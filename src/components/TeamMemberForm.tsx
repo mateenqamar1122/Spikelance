@@ -117,7 +117,7 @@ const TeamMemberForm = ({ initialData, onSubmit, onCancel }: TeamMemberFormProps
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 max-h-[80vh] overflow-y-auto pb-20 relative">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <FormField
@@ -317,7 +317,7 @@ const TeamMemberForm = ({ initialData, onSubmit, onCancel }: TeamMemberFormProps
           </div>
         </div>
         
-        <div className="flex justify-end space-x-3">
+        <div className="flex justify-end space-x-3 absolute bottom-0 right-0 left-0 bg-background p-4 border-t">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>

@@ -33,8 +33,23 @@ import TaskManager from "./pages/tools/TaskManager";
 import Auth from "./pages/Auth";
 import AuthGuard from "./components/AuthGuard";
 import Expenses from "./pages/Expenses";
-import AcceptInvitation from "./pages/AcceptInvitation";
+// import AcceptInvitation from "./pages/AcceptInvitation";
 import Automation from "@/pages/tools/Automation";
+import InvoiceGenerator from "./pages/InvoiceGenerator";
+import TimeTracking from "@/pages/tools/TimeTracking";
+import Timesheet from "@/pages/Timesheet";
+
+//client realted imports 
+import ClientLayout from "@/components/client/ClientLayout";
+import AcceptInvitation from "@/pages/client/AcceptInvitation";
+import ClientDashboard from "@/pages/client/ClientDashboard";
+import ClientLogin from "@/pages/client/ClientLogin";
+import ClientProjects from "@/pages/client/ClientProjects";
+import ClientInvoices from "@/pages/client/ClientInvoices";
+import ClientMessages from "@/pages/client/ClientMessages";
+import ClientAppointments from "@/pages/client/ClientAppointments";
+// import ClientProfile from "@/pages/client/Profile";
+////
 
 const queryClient = new QueryClient();
 
@@ -58,6 +73,9 @@ const App = () => (
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/analytics" element={<Analytics />} />
                   <Route path="/payments" element={<Payments />} />
+                  <Route path="invoices" element={<InvoiceGenerator />} />
+                  {/* <Route path="/invoices/create" element={<InvoiceCreate />} /> */}
+                  {/* <Route path="/invoices/:id" element={<InvoiceDetail />} /> */}
                   <Route path="/expenses" element={<Expenses />} />
                   <Route path="/portfolio" element={<Portfolio />} />
                   
@@ -69,12 +87,15 @@ const App = () => (
                   
                   {/* Tool Routes */}
                   <Route path="/ai-assistant" element={<AIAssistant />} />
+                  <Route path="/tools/time-tracking" element={<TimeTracking />} />
                   <Route path="/content-generator" element={<ContentGenerator />} />
                   <Route path="/file-manager" element={<FileManager />} />
                   <Route path="/productivity" element={<Productivity />} />
                   <Route path="/code-snippets" element={<CodeSnippets />} />
                   <Route path="/task-manager" element={<TaskManager />} />
                   <Route path="/automation" element={<Automation />} />
+                  // In your routes configuration
+                  <Route path="/timesheet" element={<Timesheet />} />
                 </Route>
                 
                 {/* Public Routes */}
@@ -84,7 +105,19 @@ const App = () => (
                 <Route path="/portfolio-preview/:id" element={<PortfolioPreview />} />
                 <Route path="/file-share/:token" element={<FileShare />} />
                 <Route path="*" element={<NotFound />} />
+                // Add these routes to your existing routes
+<Route path="/client/accept-invitation" element={<AcceptInvitation />} />
+<Route path="/client/login" element={<ClientLogin />} />
+<Route path="/client" element={<ClientLayout />}>
+  <Route path="dashboard" element={<ClientDashboard />} />
+  <Route path="projects" element={<ClientProjects />} />
+  <Route path="invoices" element={<ClientInvoices />} />
+  <Route path="messages" element={<ClientMessages />} />
+  <Route path="appointments" element={<ClientAppointments />} />
+  {/* <Route path="profile" element={<ClientProfile />} /> */}
+</Route>
               </Routes>
+             
             </BrowserRouter>
           </SidebarProvider>
         </TooltipProvider>

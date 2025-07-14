@@ -43,7 +43,7 @@ export default function TaskList({
           </span>
         </div>
         
-        <div className={cn("transition-opacity", isHeaderHovered ? "opacity-100" : "opacity-0")}>
+        <div className={cn(isHeaderHovered ? "opacity-100" : "opacity-0")}>
           {onAddTask && (
             <Button 
               variant="ghost" 

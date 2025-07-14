@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createClientInvitation } from "@/services/clientInvitationService";
 import { Loader2 } from "lucide-react";
+import { generatePassword } from "@/lib/utils";
 
 interface ClientInviteDialogProps {
   projectId: string;
@@ -29,8 +29,8 @@ export function ClientInviteDialog({
   onInviteSent
 }: ClientInviteDialogProps) {
   const [email, setEmail] = useState("");
-  const [accessLevel, setAccessLevel] = useState<"view" | "comment" | "edit">("view");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [generatedPassword] = useState(() => generatePassword(12));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +38,7 @@ export function ClientInviteDialog({
 
     setIsSubmitting(true);
     try {
-      const result = await createClientInvitation(projectId, email);
+      const result = await createClientInvitation(projectId, email, undefined, generatedPassword);
       if (result) {
         setEmail("");
         onOpenChange(false);
@@ -59,30 +59,30 @@ export function ClientInviteDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Client Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="client@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Client Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="client@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Generated Password</Label>
+              <Input
+                id="password"
+                type="text"
+                value={generatedPassword}
+                readOnly
+              />
+              <p className="text-sm text-muted-foreground">This password will be sent to the client's email.</p>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>Access Level</Label>
-            <Select value={accessLevel} onValueChange={(value: "view" | "comment" | "edit") => setAccessLevel(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select access level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="view">View Only</SelectItem>
-                <SelectItem value="comment">Can Comment</SelectItem>
-                <SelectItem value="edit">Can Edit</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+
           <DialogFooter className="mt-6">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel

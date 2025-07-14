@@ -51,18 +51,20 @@ export interface User {
 }
 
 export interface Client {
+  updated_at: string | number | Date;
   id: string;
   created_at: string;
   name: string;
-  company: string | null;
+  company?: string | null;
   email: string;
-  phone: string | null;
+  phone?: string |null;
   address: string | null;
   website: string | null;
   notes: string | null;
   city: string | null;
   state: string | null;
-  postal_code: string | null;
+  postal_code:  string | null;
+  
   country: string | null;
   industry: string | null;
   contact_name: string | null;
@@ -71,7 +73,7 @@ export interface Client {
   auth_user_id: string | null;
   has_portal_access: boolean | null;
   temp_password: string | null;
-  projects?: Project[];
+  projects?: any[];
 }
 
 export interface Project {
@@ -142,4 +144,116 @@ export interface TeamMember {
   department?: string;
   bio?: string;
   avatar_url?: string;
+}
+
+export interface Invoice {
+  id: string;
+  user_id: string;
+  client_id?: string;
+  project_id?: string;
+  invoice_number: string;
+  title: string;
+  issue_date: string;
+  due_date: string;
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  subtotal: number;
+  tax_rate?: number;
+  tax_amount?: number;
+  discount_amount?: number;
+  total_amount: number;
+  currency: string;
+  notes?: string;
+  terms_conditions?: string;
+  payment_instructions?: string;
+  company_name?: string;
+  company_email?: string;
+  company_phone?: string;
+  company_address?: string;
+  logo_url?: string;
+  template_style?: 'modern' | 'classic' | 'minimal' | 'creative';
+  brand_color?: string;
+  created_at?: string;
+  updated_at?: string;
+  client?: Client;
+  project?: Project;
+  invoice_items?: InvoiceItem[];
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoice_id: string;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  total_amount: number;
+  created_at?: string;
+}
+
+export interface TimeEntry {
+  projects: any;
+  id: string;
+  user_id: string;
+  project_id: string | null;
+  task_id: string | null;
+  description: string | null;
+  start_time: string;
+  end_time: string | null;
+  duration_minutes: number | null;
+  hourly_rate: number | null;
+  billable: boolean;
+  billed: boolean;
+  invoice_id: string | null;
+  created_at: string;
+  updated_at: string;
+  project?: Project;
+  task?: any;
+}
+
+export interface TimeTrackingSession {
+  id: string;
+  user_id: string;
+  project_id: string | null;
+  task_id: string | null;
+  description: string | null;
+  start_time: string;
+  is_active: boolean;
+  created_at: string;
+  project?: Project;
+  task?: any;
+}
+
+export interface Insight {
+  id: string;
+  entity_id: string;
+  entity_type: string;
+  key_metrics: any;
+  total_revenue: number | null;
+  active_projects: number | null;
+  completed_projects: number | null;
+  average_completion_time: number | null;
+  total_time_spent: number | null;
+  last_interaction: string | null;
+  upcoming_deadlines: any[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Message {
+  id: string;
+  room_id: string;
+  sender_id: string;
+  content: string;
+  message_type: 'text' | 'image' | 'file';
+  attachment_url?: string;
+  created_at: string;
+  updated_at: string;
+  edited: boolean;
+  reply_to_id?: string;
+  sender?: {
+    id: string;
+    email: string;
+    display_name?: string;
+    avatar_url?: string;
+  };
+  reply_to?: Message;
 }

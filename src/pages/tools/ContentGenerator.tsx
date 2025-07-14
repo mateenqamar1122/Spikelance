@@ -36,7 +36,9 @@ import {
   BookmarkCheck,
   RotateCcw,
   File,
-  FileText
+  FileText,
+  History,
+  Archive
 } from "lucide-react";
 import { 
   generateContent, 
@@ -48,10 +50,11 @@ import {
   ContentGeneration 
 } from "@/services/contentGenerationService";
 import { toast } from "sonner";
+import RichTextEditor from "@/components/project/RichTextEditor";
 
 const ContentGenerator = () => {
   // States for the form
-  const [activeTab, setActiveTab] = useState("text");
+  const [activeTab, setActiveTab] = useState("generator");
   const [contentType, setContentType] = useState("paragraph");
   const [tone, setTone] = useState("professional");
   const [keywords, setKeywords] = useState("");
@@ -59,10 +62,8 @@ const ContentGenerator = () => {
   const [title, setTitle] = useState("");
   const [generatedContent, setGeneratedContent] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [tagsInput, setTagsInput] = useState("");
   const [newTag, setNewTag] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -86,9 +87,13 @@ const ContentGenerator = () => {
           if (generatedTitle.length > 30) {
             generatedTitle = generatedTitle.substring(0, 30) + '...';
           }
-          setTitle(generatedTitle);
+          setTitle(generatedTitle || 'Generated Content');
         }
       }
+    },
+    onError: (error) => {
+      console.error("Error generating content:", error);
+      toast.error("Failed to generate content. Please try again.");
     },
   });
 
@@ -100,6 +105,10 @@ const ContentGenerator = () => {
       // Reset form after saving
       resetForm();
     },
+    onError: (error) => {
+      console.error("Error saving content:", error);
+      toast.error("Failed to save content. Please try again.");
+    },
   });
 
   const updateMutation = useMutation({
@@ -107,6 +116,11 @@ const ContentGenerator = () => {
       updateContentGeneration(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contentGenerations'] });
+      toast.success("Content updated successfully");
+    },
+    onError: (error) => {
+      console.error("Error updating content:", error);
+      toast.error("Failed to update content. Please try again.");
     },
   });
 
@@ -114,6 +128,11 @@ const ContentGenerator = () => {
     mutationFn: deleteContentGeneration,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contentGenerations'] });
+      toast.success("Content deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Error deleting content:", error);
+      toast.error("Failed to delete content. Please try again.");
     },
   });
 
@@ -123,11 +142,15 @@ const ContentGenerator = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contentGenerations'] });
     },
+    onError: (error) => {
+      console.error("Error updating favorite status:", error);
+      toast.error("Failed to update favorite status. Please try again.");
+    },
   });
 
   // Function to handle content generation
   const handleGenerateContent = async () => {
-    if (!keywords) {
+    if (!keywords.trim()) {
       toast.error("Please enter keywords or a topic");
       return;
     }
@@ -148,34 +171,47 @@ const ContentGenerator = () => {
   };
 
   // Function to save generated content
-  const handleSaveContent = () => {
-    if (!generatedContent || !title) {
+  const handleSaveContent = async () => {
+    if (!generatedContent || !title.trim()) {
       toast.error("Content and title are required");
       return;
     }
 
-    saveMutation.mutate({
-      title,
-      prompt: keywords,
-      content: generatedContent,
-      content_type: contentType,
-      tone,
-      tags: selectedTags.length > 0 ? selectedTags : null,
-    });
+    try {
+      await saveMutation.mutateAsync({
+        title: title.trim(),
+        prompt: keywords,
+        content: generatedContent,
+        content_type: contentType,
+        tone,
+        tags: selectedTags.length > 0 ? selectedTags : null,
+      });
+    } catch (error) {
+      console.error("Error saving content:", error);
+    }
   };
 
   // Function to update content
-  const handleUpdateContent = (id: string) => {
+  const handleUpdateContent = async (id: string) => {
     if (editingId === id) {
-      updateMutation.mutate({
-        id,
-        updates: {
-          title,
-          content: generatedContent,
-          tags: selectedTags.length > 0 ? selectedTags : null,
-        },
-      });
-      setEditingId(null);
+      if (!generatedContent || !title.trim()) {
+        toast.error("Content and title are required");
+        return;
+      }
+
+      try {
+        await updateMutation.mutateAsync({
+          id,
+          updates: {
+            title: title.trim(),
+            content: generatedContent,
+            tags: selectedTags.length > 0 ? selectedTags : null,
+          },
+        });
+        setEditingId(null);
+      } catch (error) {
+        console.error("Error updating content:", error);
+      }
     } else {
       const item = savedGenerations.find(gen => gen.id === id);
       if (item) {
@@ -186,15 +222,15 @@ const ContentGenerator = () => {
         setTone(item.tone || "professional");
         setSelectedTags(item.tags || []);
         setEditingId(id);
-        setShowHistory(false);
+        setActiveTab("generator");
       }
     }
   };
 
   // Function to add a tag
   const addTag = () => {
-    if (newTag && !selectedTags.includes(newTag)) {
-      setSelectedTags([...selectedTags, newTag]);
+    if (newTag.trim() && !selectedTags.includes(newTag.trim())) {
+      setSelectedTags([...selectedTags, newTag.trim()]);
       setNewTag("");
     }
   };
@@ -205,17 +241,26 @@ const ContentGenerator = () => {
   };
 
   // Function to copy content to clipboard
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedContent);
+  const copyToClipboard = (content: string) => {
+    // Strip HTML tags for plain text copy
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = content;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    navigator.clipboard.writeText(plainText);
     toast.success("Content copied to clipboard");
   };
 
   // Function to download content
-  const downloadContent = () => {
+  const downloadContent = (content: string, fileName: string) => {
+    // Strip HTML tags for plain text download
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = content;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    
     const element = document.createElement("a");
-    const file = new Blob([generatedContent], { type: "text/plain" });
+    const file = new Blob([plainText], { type: "text/plain" });
     element.href = URL.createObjectURL(file);
-    element.download = `${title || "generated-content"}.txt`;
+    element.download = `${fileName || "generated-content"}.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -254,29 +299,9 @@ const ContentGenerator = () => {
     )
   );
 
-  // Set contentType and tone based on activeTab
-  useEffect(() => {
-    switch (activeTab) {
-      case "text":
-        setContentType("paragraph");
-        break;
-      case "social":
-        setContentType("social-post");
-        break;
-      case "email":
-        setContentType("email");
-        break;
-      case "blog":
-        setContentType("blog-outline");
-        break;
-      default:
-        setContentType("paragraph");
-    }
-  }, [activeTab]);
-
   // Handle tags input with Enter key
   const handleTagsKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && newTag) {
+    if (e.key === 'Enter' && newTag.trim()) {
       e.preventDefault();
       addTag();
     }
@@ -291,180 +316,76 @@ const ContentGenerator = () => {
         </p>
       </div>
 
-      <div className="flex justify-between items-center">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="text">Text Content</TabsTrigger>
-            <TabsTrigger value="social">Social Media</TabsTrigger>
-            <TabsTrigger value="email">Email Templates</TabsTrigger>
-            <TabsTrigger value="blog">Blog Ideas</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        
-        <Button 
-          variant="outline" 
-          onClick={() => setShowHistory(!showHistory)}
-          className="ml-4"
-        >
-          {showHistory ? "Hide History" : "Show History"}
-        </Button>
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="generator">Generator</TabsTrigger>
+          <TabsTrigger value="saved">
+            <Archive className="h-4 w-4 mr-1" />
+            Saved Content ({savedGenerations.length})
+          </TabsTrigger>
+        </TabsList>
 
-      {!showHistory ? (
-        <div className="space-y-4">
+        <TabsContent value="generator" className="space-y-4">
           <Card className="border border-gray-300/50 dark:border-gray-700/50 shadow-md">
             <CardHeader className="pb-2">
-              <CardTitle>
-                {activeTab === "text" && "Generate Text Content"}
-                {activeTab === "social" && "Generate Social Media Content"}
-                {activeTab === "email" && "Generate Email Templates"}
-                {activeTab === "blog" && "Generate Blog Ideas"}
-              </CardTitle>
+              <CardTitle>Generate Content</CardTitle>
               <CardDescription>
-                {activeTab === "text" && "Create professional text with AI assistance"}
-                {activeTab === "social" && "Create engaging posts for various platforms"}
-                {activeTab === "email" && "Create professional email templates"}
-                {activeTab === "blog" && "Generate engaging blog topics and outlines"}
+                Create professional content with AI assistance
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {activeTab === "text" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Content Type</Label>
-                      <Select value={contentType} onValueChange={setContentType}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select content type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="paragraph">Paragraph</SelectItem>
-                          <SelectItem value="bullet-points">Bullet Points</SelectItem>
-                          <SelectItem value="headline">Headlines</SelectItem>
-                          <SelectItem value="slogan">Slogan/Tagline</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Tone</Label>
-                      <Select value={tone} onValueChange={setTone}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select tone" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="casual">Casual</SelectItem>
-                          <SelectItem value="friendly">Friendly</SelectItem>
-                          <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
-                          <SelectItem value="authoritative">Authoritative</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Content Type</Label>
+                    <Select value={contentType} onValueChange={setContentType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select content type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="paragraph">Paragraph</SelectItem>
+                        <SelectItem value="bullet-points">Bullet Points</SelectItem>
+                        <SelectItem value="headline">Headlines</SelectItem>
+                        <SelectItem value="slogan">Slogan/Tagline</SelectItem>
+                        <SelectItem value="twitter-post">Twitter/X Post</SelectItem>
+                        <SelectItem value="linkedin-post">LinkedIn Post</SelectItem>
+                        <SelectItem value="instagram-caption">Instagram Caption</SelectItem>
+                        <SelectItem value="facebook-post">Facebook Post</SelectItem>
+                        <SelectItem value="follow-up-email">Follow-up Email</SelectItem>
+                        <SelectItem value="welcome-email">Welcome Email</SelectItem>
+                        <SelectItem value="sales-outreach">Sales Outreach</SelectItem>
+                        <SelectItem value="cold-email">Cold Email</SelectItem>
+                        <SelectItem value="newsletter">Newsletter</SelectItem>
+                        <SelectItem value="blog-outline">Blog Outline</SelectItem>
+                        <SelectItem value="blog-intro">Blog Introduction</SelectItem>
+                        <SelectItem value="blog-title-ideas">Blog Title Ideas</SelectItem>
+                        <SelectItem value="blog-conclusion">Blog Conclusion</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
-
-                {activeTab === "social" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Platform</Label>
-                      <Select value={contentType} onValueChange={setContentType}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select platform" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="twitter-post">Twitter/X</SelectItem>
-                          <SelectItem value="linkedin-post">LinkedIn</SelectItem>
-                          <SelectItem value="instagram-caption">Instagram Caption</SelectItem>
-                          <SelectItem value="facebook-post">Facebook</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Tone</Label>
-                      <Select value={tone} onValueChange={setTone}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select tone" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="casual">Casual</SelectItem>
-                          <SelectItem value="friendly">Friendly</SelectItem>
-                          <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
-                          <SelectItem value="promotional">Promotional</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Tone</Label>
+                    <Select value={tone} onValueChange={setTone}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select tone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="professional">Professional</SelectItem>
+                        <SelectItem value="casual">Casual</SelectItem>
+                        <SelectItem value="friendly">Friendly</SelectItem>
+                        <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
+                        <SelectItem value="authoritative">Authoritative</SelectItem>
+                        <SelectItem value="formal">Formal</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                        <SelectItem value="persuasive">Persuasive</SelectItem>
+                        <SelectItem value="informative">Informative</SelectItem>
+                        <SelectItem value="educational">Educational</SelectItem>
+                        <SelectItem value="conversational">Conversational</SelectItem>
+                        <SelectItem value="promotional">Promotional</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
-
-                {activeTab === "email" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Email Type</Label>
-                      <Select value={contentType} onValueChange={setContentType}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select email type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="follow-up-email">Follow-up Email</SelectItem>
-                          <SelectItem value="welcome-email">Welcome Email</SelectItem>
-                          <SelectItem value="sales-outreach">Sales Outreach</SelectItem>
-                          <SelectItem value="cold-email">Cold Email</SelectItem>
-                          <SelectItem value="newsletter">Newsletter</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Tone</Label>
-                      <Select value={tone} onValueChange={setTone}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select tone" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="friendly">Friendly</SelectItem>
-                          <SelectItem value="formal">Formal</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
-                          <SelectItem value="persuasive">Persuasive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "blog" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Content Type</Label>
-                      <Select value={contentType} onValueChange={setContentType}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select content type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="blog-outline">Blog Outline</SelectItem>
-                          <SelectItem value="blog-intro">Blog Introduction</SelectItem>
-                          <SelectItem value="blog-title-ideas">Blog Title Ideas</SelectItem>
-                          <SelectItem value="blog-conclusion">Blog Conclusion</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Tone</Label>
-                      <Select value={tone} onValueChange={setTone}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select tone" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="informative">Informative</SelectItem>
-                          <SelectItem value="educational">Educational</SelectItem>
-                          <SelectItem value="conversational">Conversational</SelectItem>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="authoritative">Authoritative</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                )}
+                </div>
                 
                 <div className="space-y-2">
                   <Label>Topic or Keywords</Label>
@@ -489,7 +410,7 @@ const ContentGenerator = () => {
                 <Button 
                   className="w-full bg-gradient-to-r from-brand-blue to-brand-cyan hover:from-brand-blue/90 hover:to-brand-cyan/90 text-white"
                   onClick={handleGenerateContent}
-                  disabled={isGenerating || !keywords}
+                  disabled={isGenerating || !keywords.trim()}
                 >
                   {isGenerating ? (
                     <>
@@ -541,37 +462,63 @@ const ContentGenerator = () => {
                           variant="outline" 
                           size="icon"
                           onClick={addTag}
-                          disabled={!newTag}
+                          disabled={!newTag.trim()}
                         >
                           <Tag className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                     
-                    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-sm font-medium">Generated Content</h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <Label>Generated Content</Label>
                         <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={copyToClipboard}>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8" 
+                            onClick={() => copyToClipboard(generatedContent)}
+                          >
                             <Copy className="h-4 w-4" />
                           </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={downloadContent}>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8" 
+                            onClick={() => downloadContent(generatedContent, title)}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                           {!editingId ? (
-                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSaveContent}>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="h-8 w-8" 
+                              onClick={handleSaveContent}
+                              disabled={saveMutation.isPending}
+                            >
                               <Save className="h-4 w-4" />
                             </Button>
                           ) : (
-                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleUpdateContent(editingId)}>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="h-8 w-8" 
+                              onClick={() => handleUpdateContent(editingId)}
+                              disabled={updateMutation.isPending}
+                            >
                               <Pencil className="h-4 w-4" />
                             </Button>
                           )}
                         </div>
                       </div>
-                      <div className="whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-400">
-                        {generatedContent}
-                      </div>
+                      
+                      <RichTextEditor
+                        content={generatedContent}
+                        onChange={setGeneratedContent}
+                        placeholder="Your generated content will appear here..."
+                        editable={true}
+                      />
                     </div>
 
                     <div className="flex justify-end gap-2">
@@ -580,13 +527,33 @@ const ContentGenerator = () => {
                           <Button variant="outline" onClick={resetForm}>
                             Cancel
                           </Button>
-                          <Button onClick={() => handleUpdateContent(editingId)}>
-                            Update Content
+                          <Button 
+                            onClick={() => handleUpdateContent(editingId)}
+                            disabled={updateMutation.isPending || !title.trim() || !generatedContent}
+                          >
+                            {updateMutation.isPending ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Updating...
+                              </>
+                            ) : (
+                              "Update Content"
+                            )}
                           </Button>
                         </>
                       ) : (
-                        <Button onClick={handleSaveContent} disabled={!title || !generatedContent}>
-                          Save Content
+                        <Button 
+                          onClick={handleSaveContent} 
+                          disabled={saveMutation.isPending || !title.trim() || !generatedContent}
+                        >
+                          {saveMutation.isPending ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            "Save Content"
+                          )}
                         </Button>
                       )}
                     </div>
@@ -595,9 +562,9 @@ const ContentGenerator = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-      ) : (
-        <div className="space-y-4">
+        </TabsContent>
+
+        <TabsContent value="saved" className="space-y-4">
           <Card className="border border-gray-300/50 dark:border-gray-700/50 shadow-md">
             <CardHeader className="pb-2">
               <CardTitle>Saved Content</CardTitle>
@@ -749,19 +716,18 @@ const ContentGenerator = () => {
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <div className="text-sm whitespace-pre-wrap line-clamp-3">
-                            {gen.content}
-                          </div>
+                          <div className="text-sm line-clamp-3" dangerouslySetInnerHTML={{ __html: gen.content }} />
                         </CardContent>
                         <CardFooter className="flex justify-between pt-0">
                           <span className="text-xs text-muted-foreground">
                             Keywords: {gen.prompt}
                           </span>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="ghost" onClick={() => {
-                              navigator.clipboard.writeText(gen.content);
-                              toast.success("Content copied to clipboard");
-                            }}>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              onClick={() => copyToClipboard(gen.content)}
+                            >
                               <Copy className="h-4 w-4 mr-1" /> Copy
                             </Button>
                             <Dialog>
@@ -770,7 +736,7 @@ const ContentGenerator = () => {
                                   <FileText className="h-4 w-4 mr-1" /> View
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="max-w-3xl">
+                              <DialogContent className="max-w-4xl max-h-[80vh]">
                                 <DialogHeader>
                                   <DialogTitle>{gen.title}</DialogTitle>
                                   <DialogDescription className="flex flex-wrap gap-2 items-center mt-1">
@@ -782,23 +748,19 @@ const ContentGenerator = () => {
                                     </span>
                                   </DialogDescription>
                                 </DialogHeader>
-                                <div className="border rounded-md p-4 my-4 whitespace-pre-wrap overflow-auto max-h-[50vh]">
-                                  {gen.content}
+                                <div className="my-4 max-h-[50vh] overflow-auto">
+                                  <RichTextEditor
+                                    content={gen.content}
+                                    onChange={() => {}} // Read-only in view mode
+                                    placeholder="Content will appear here..."
+                                    editable={false}
+                                  />
                                 </div>
                                 <DialogFooter>
                                   <Button 
                                     variant="outline" 
                                     className="mr-auto"
-                                    onClick={() => {
-                                      const element = document.createElement("a");
-                                      const file = new Blob([gen.content], { type: "text/plain" });
-                                      element.href = URL.createObjectURL(file);
-                                      element.download = `${gen.title || "content"}.txt`;
-                                      document.body.appendChild(element);
-                                      element.click();
-                                      document.body.removeChild(element);
-                                      toast.success("Content downloaded");
-                                    }}
+                                    onClick={() => downloadContent(gen.content, gen.title)}
                                   >
                                     <Download className="h-4 w-4 mr-1" /> Download
                                   </Button>
@@ -839,8 +801,8 @@ const ContentGenerator = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

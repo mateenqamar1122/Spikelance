@@ -1,188 +1,96 @@
 
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import UserMenu from "./UserMenu";
-import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
+import { cn } from "@/lib/utils";
+import { Menu, X } from "lucide-react";
 
 const LandingNavbar = () => {
-  const { user } = useAuth();
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const isScrolled = window.scrollY > 20;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [scrolled]);
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
-    <header 
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        scrolled 
-          ? "border-b shadow-md bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80" 
-          : "bg-transparent border-transparent"
-      }`}
-    >
-      <div className="container flex h-20 items-center justify-between">
-        <div className="flex items-center ">
-          <Link to="/" className="flex items-center space-x-3 group">
-          <div>
-  <img
-    src="/logo.png"
-    alt="Logo"
-    className="h-6 w-6 object-contain transition-transform duration-300 group-hover:scale-110"
-  />
-</div>
+    <div className="rounded-full backdrop-blur-md bg-white/70 dark:bg-gray-900/70 border border-gray-200/50 dark:border-gray-700/50 shadow-lg px-6 py-3 transition-all duration-300 hover:shadow-xl">
+      <div className="flex items-center justify-between">
+        <Link to="/" className="flex items-center space-x-2">
+          <img src="/logo.png" alt="Proflo" className="h-8 w-8" />
+          <span className="font-bold text-xl bg-gradient-to-r from-brand-blue to-brand-cyan bg-clip-text text-transparent">
+            Spikelance
+          </span>
+        </Link>
 
-            <span className="font-bold text-lg premium-text-gradient">Spikelance</span>
-          </Link>
-        </div>
-        
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex gap-8 items-center">
-          <Link 
-            to="/features" 
-            className="text-sm font-medium relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
-          >
-            Features
+        <nav className="hidden md:flex items-center space-x-1">
+          <Link to="/features">
+            <Button variant="ghost" className="rounded-full">Features</Button>
           </Link>
-          <Link 
-            to="/pricing" 
-            className="text-sm font-medium relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
-          >
-            Pricing
+          <Link to="/pricing">
+            <Button variant="ghost" className="rounded-full">Pricing</Button>
           </Link>
-          <Link 
-            to="/about" 
-            className="text-sm font-medium relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
-          >
-            About
+          <Link to="/about">
+            <Button variant="ghost" className="rounded-full">About</Button>
           </Link>
-          <Link 
-            to="/contact" 
-            className="text-sm font-medium relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
-          >
-            Contact
+          <Link to="/contact">
+            <Button variant="ghost" className="rounded-full">Contact</Button>
           </Link>
         </nav>
-        
+
+        <div className="hidden md:flex items-center space-x-2">
+          <ModeToggle />
+          <Link to="/auth">
+            <Button variant="outline" className="rounded-full">Log in</Button>
+          </Link>
+          <Link to="/auth">
+            <Button className="rounded-full bg-gradient-to-r from-brand-blue to-brand-cyan hover:from-brand-cyan hover:to-brand-blue text-white">
+              Get Started
+            </Button>
+          </Link>
+        </div>
+
         {/* Mobile Menu Button */}
-        <button 
-          className="md:hidden flex flex-col space-y-1.5 p-2 rounded-md hover:bg-muted/50 transition-colors"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className={`block w-6 h-0.5 bg-foreground transition-transform duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-          <span className={`block w-6 h-0.5 bg-foreground transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
-          <span className={`block w-6 h-0.5 bg-foreground transition-transform duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
-        </button>
-        
-        <div className="hidden md:flex items-center gap-4">
-          {user ? (
-            <>
-              <Button 
-                variant="outline" 
-                asChild 
-                className="border-primary/30 hover:border-primary hover:bg-primary/5 transition-all duration-300"
-              >
-                <Link to="/dashboard">Dashboard</Link>
-              </Button>
-              <UserMenu />
-            </>
-          ) : (
-            <>
-              <Button 
-                variant="ghost" 
-                asChild 
-                className="hover:bg-primary/5 transition-all duration-300"
-              >
-                <Link to="/auth">Log in</Link>
-              </Button>
-              <Button 
-                asChild 
-                className="bg-gradient-to-r from-brand-cyan to-brand-blue hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 hover:scale-105"
-              >
-                <Link to="/auth">Sign up</Link>
-              </Button>
-            </>
-          )}
+        <div className="flex md:hidden items-center space-x-2">
+          <ModeToggle />
+          <Button variant="ghost" size="icon" onClick={toggleMenu} className="md:hidden">
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <div className={`md:hidden absolute w-full bg-background/95 backdrop-blur-md border-b shadow-lg transition-all duration-300 overflow-hidden ${mobileMenuOpen ? 'max-h-96' : 'max-h-0'}`}>
-        <nav className="container flex flex-col py-4 space-y-4">
-          <Link 
-            to="/features" 
-            className="text-sm font-medium p-2 hover:bg-primary/5 rounded-md transition-colors"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Features
+      {/* Mobile Navigation */}
+      <div className={cn(
+        "md:hidden transition-all duration-300 overflow-hidden",
+        isMenuOpen ? "max-h-96 mt-4" : "max-h-0"
+      )}>
+        <nav className="flex flex-col space-y-2 py-2">
+          <Link to="/features" onClick={() => setIsMenuOpen(false)}>
+            <Button variant="ghost" className="w-full justify-start rounded-full">Features</Button>
           </Link>
-          <Link 
-            to="/pricing" 
-            className="text-sm font-medium p-2 hover:bg-primary/5 rounded-md transition-colors"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Pricing
+          <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>
+            <Button variant="ghost" className="w-full justify-start rounded-full">Pricing</Button>
           </Link>
-          <Link 
-            to="/about" 
-            className="text-sm font-medium p-2 hover:bg-primary/5 rounded-md transition-colors"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            About
+          <Link to="/about" onClick={() => setIsMenuOpen(false)}>
+            <Button variant="ghost" className="w-full justify-start rounded-full">About</Button>
           </Link>
-          <Link 
-            to="/contact" 
-            className="text-sm font-medium p-2 hover:bg-primary/5 rounded-md transition-colors"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Contact
+          <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
+            <Button variant="ghost" className="w-full justify-start rounded-full">Contact</Button>
           </Link>
-          
-          <div className="pt-2 border-t flex flex-col space-y-3">
-            {user ? (
-              <Button 
-                variant="outline" 
-                asChild 
-                className="w-full justify-center"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Link to="/dashboard">Dashboard</Link>
+          <div className="flex flex-col space-y-2 pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
+            <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+              <Button variant="outline" className="w-full rounded-full">Log in</Button>
+            </Link>
+            <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+              <Button className="w-full rounded-full bg-gradient-to-r from-brand-blue to-brand-cyan hover:from-brand-cyan hover:to-brand-blue text-white">
+                Sign up
               </Button>
-            ) : (
-              <>
-                <Button 
-                  variant="outline" 
-                  asChild 
-                  className="w-full justify-center"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Link to="/auth">Log in</Link>
-                </Button>
-                <Button 
-                  asChild 
-                  className="w-full justify-center bg-gradient-to-r from-brand-cyan to-brand-blue"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Link to="/auth">Sign up</Link>
-                </Button>
-              </>
-            )}
+            </Link>
           </div>
         </nav>
       </div>
-    </header>
+    </div>
   );
 };
 

@@ -3,7 +3,8 @@ import { Client } from "@/types/database";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, MapPin, Globe, Building, FileText, Edit, ArrowLeft } from "lucide-react";
+import { Mail, Phone, MapPin, Globe, Building, FileText, Edit, ArrowLeft, Download } from "lucide-react";
+import { generateClientPDF } from "@/utils/clientPdfGenerator";
 import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { deleteClient } from "@/services/clientService";
@@ -53,6 +54,16 @@ export default function ClientDetail({ client, onEdit, onBack, onDeleted }: Clie
           </Badge>
         )}
         <div className="ml-auto flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => {
+            const pdfContent = generateClientPDF(client);
+            const link = document.createElement('a');
+            link.href = pdfContent;
+            link.download = `${client.name}-details.pdf`;
+            link.click();
+          }}>
+            <Download className="mr-2 h-4 w-4" />
+            Download PDF
+          </Button>
           <Button variant="outline" size="sm" onClick={onEdit}>
             <Edit className="mr-2 h-4 w-4" />
             Edit

@@ -78,9 +78,16 @@ const Dashboard = () => {
       
       try {
         setLoadingStats(true);
+        const projectStatsData = await getProjectStats();
         const dashboardStats = await getDashboardStats();
+        
         if (dashboardStats) {
-          setStats(dashboardStats);
+          setStats({
+            ...dashboardStats,
+            total_projects: projectStatsData.total,
+            active_projects: projectStatsData.active,
+            completed_projects: projectStatsData.completed
+          });
         }
 
         // Get revenue data

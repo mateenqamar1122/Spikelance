@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -52,13 +51,17 @@ import {
   Mail,
   Phone,
   MapPin,
+  MessageSquare,
 } from "lucide-react";
 import { TeamMember, getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember, getTeamStatistics } from "@/services/teamService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import TeamMemberCard from "@/components/TeamMemberCard";
 
+
 const TeamManager = () => {
   const queryClient = useQueryClient();
+  // const { user, session, loading } = useAuth();
+  const [activeTab, setActiveTab] = useState("members");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<string | null>(null);
@@ -310,270 +313,313 @@ const TeamManager = () => {
         </Card>
       </div>
 
-      {/* Team Management */}
+      {/* Team Management with Tabs */}
       <Card>
-        <CardHeader>
-          <CardTitle>Team Members</CardTitle>
-          <CardDescription>
-            Manage your team members, assign roles, and update their information.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Filters and Actions */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
-              <div className="relative w-full sm:w-72">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search members..."
-                  className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-1">
-                    <Filter className="h-4 w-4 mr-1" />
-                    <span>Filter</span>
-                    <ChevronDown className="h-3 w-3 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-52">
-                  <div className="p-2">
-                    <Label className="text-xs">Role</Label>
-                    <Select value={filterRole || ""} onValueChange={(value) => setFilterRole(value || null)}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="All roles" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">All roles</SelectItem>
-                        {roles.map((role) => (
-                          <SelectItem key={role} value={role}>
-                            {role}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full border-b rounded-none px-4">
+            <TabsTrigger value="members" className="flex items-center">
+              <Users className="h-4 w-4 mr-2" />
+              Team Members
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex items-center">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Team Chat
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="members">
+            <CardHeader>
+              <CardTitle>Team Members</CardTitle>
+              <CardDescription>
+                Manage your team members, assign roles, and update their information.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Filters and Actions */}
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+                  <div className="relative w-full sm:w-72">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search members..."
+                      className="pl-8"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                   </div>
                   
-                  <div className="p-2 pt-0">
-                    <Label className="text-xs">Department</Label>
-                    <Select value={filterDepartment || ""} onValueChange={(value) => setFilterDepartment(value || null)}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="All departments" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">All departments</SelectItem>
-                        {departments.map((dept) => (
-                          <SelectItem key={dept} value={dept}>
-                            {dept}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-1">
-                    {sortOrder === "asc" ? <ArrowUpWideNarrow className="h-4 w-4 mr-1" /> : <ArrowDownNarrowWide className="h-4 w-4 mr-1" />}
-                    <span>Sort</span>
-                    <ChevronDown className="h-3 w-3 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setSortOrder("asc")}>
-                    <ArrowUpWideNarrow className="h-4 w-4 mr-2" /> Name (A-Z)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortOrder("desc")}>
-                    <ArrowDownNarrowWide className="h-4 w-4 mr-2" /> Name (Z-A)
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-1">
+                        <Filter className="h-4 w-4 mr-1" />
+                        <span>Filter</span>
+                        <ChevronDown className="h-3 w-3 opacity-50" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-52">
+                      <div className="p-2">
+                        <Label className="text-xs">Role</Label>
+                        <Select value={filterRole || ""} onValueChange={(value) => setFilterRole(value || null)}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="All roles" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">All roles</SelectItem>
+                            {roles.map((role) => (
+                              <SelectItem key={role} value={role}>
+                                {role}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="p-2 pt-0">
+                        <Label className="text-xs">Department</Label>
+                        <Select value={filterDepartment || ""} onValueChange={(value) => setFilterDepartment(value || null)}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="All departments" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">All departments</SelectItem>
+                            {departments.map((dept) => (
+                              <SelectItem key={dept} value={dept}>
+                                {dept}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-1">
+                        {sortOrder === "asc" ? <ArrowUpWideNarrow className="h-4 w-4 mr-1" /> : <ArrowDownNarrowWide className="h-4 w-4 mr-1" />}
+                        <span>Sort</span>
+                        <ChevronDown className="h-3 w-3 opacity-50" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setSortOrder("asc")}>
+                        <ArrowUpWideNarrow className="h-4 w-4 mr-2" /> Name (A-Z)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortOrder("desc")}>
+                        <ArrowDownNarrowWide className="h-4 w-4 mr-2" /> Name (Z-A)
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-              {selectedMembers.length > 0 && (
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected ({selectedMembers.length})
-                </Button>
-              )}
-            </div>
-            
-            <div className="flex items-center ml-auto">
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Grid View"
-                className={viewMode === "grid" ? "bg-muted" : ""}
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="List View"
-                className={viewMode === "list" ? "bg-muted" : ""}
-                onClick={() => setViewMode("list")}
-              >
-                <LayoutList className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Team Members List/Grid */}
-          {isLoading ? (
-            <div className="text-center py-12">Loading team members...</div>
-          ) : isError ? (
-            <div className="text-center py-12 text-red-500">
-              Error loading team members. Please try again.
-            </div>
-          ) : filteredMembers.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              No team members found. Add some team members to get started.
-            </div>
-          ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredMembers.map((member) => (
-                <div key={member.id} className="relative">
-                  <input 
-                    type="checkbox"
-                    checked={selectedMembers.includes(member.id)}
-                    onChange={() => toggleSelectMember(member.id)}
-                    className="absolute top-3 left-3 z-10 h-4 w-4 rounded border-gray-300"
-                  />
-                  <TeamMemberCard 
-                    member={member}
-                    onEdit={(data) => {
-                      updateMutation.mutate({ id: member.id, data });
-                    }}
-                    onDelete={(id) => {
-                      setMemberToDelete(id);
-                      setIsDeleteDialogOpen(true);
-                    }}
-                  />
+                  {selectedMembers.length > 0 && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => setIsDeleteDialogOpen(true)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected ({selectedMembers.length})
+                    </Button>
+                  )}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="px-4 py-3 text-left font-medium">
+                
+                <div className="flex items-center ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Grid View"
+                    className={viewMode === "grid" ? "bg-muted" : ""}
+                    onClick={() => setViewMode("grid")}
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="List View"
+                    className={viewMode === "list" ? "bg-muted" : ""}
+                    onClick={() => setViewMode("list")}
+                  >
+                    <LayoutList className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Team Members List/Grid */}
+              {isLoading ? (
+                <div className="text-center py-12">Loading team members...</div>
+              ) : isError ? (
+                <div className="text-center py-12 text-red-500">
+                  Error loading team members. Please try again.
+                </div>
+              ) : filteredMembers.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  No team members found. Add some team members to get started.
+                </div>
+              ) : viewMode === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filteredMembers.map((member) => (
+                    <div key={member.id} className="relative">
                       <input 
                         type="checkbox"
-                        checked={selectedMembers.length === filteredMembers.length && filteredMembers.length > 0}
-                        onChange={handleSelectAll}
-                        className="h-4 w-4 rounded border-gray-300"
+                        checked={selectedMembers.includes(member.id)}
+                        onChange={() => toggleSelectMember(member.id)}
+                        className="absolute top-3 left-3 z-10 h-4 w-4 rounded border-gray-300"
                       />
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">Name</th>
-                    <th className="px-4 py-3 text-left font-medium">Email</th>
-                    <th className="px-4 py-3 text-left font-medium">Role</th>
-                    <th className="px-4 py-3 text-left font-medium">Department</th>
-                    <th className="px-4 py-3 text-left font-medium">Location</th>
-                    <th className="px-4 py-3 text-right font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredMembers.map((member) => (
-                    <tr key={member.id} className="border-b hover:bg-muted/50">
-                      <td className="px-4 py-3">
-                        <input 
-                          type="checkbox"
-                          checked={selectedMembers.includes(member.id)}
-                          onChange={() => toggleSelectMember(member.id)}
-                          className="h-4 w-4 rounded border-gray-300"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={member.avatar_url || undefined} alt={member.name} />
-                            <AvatarFallback>
-                              {member.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">{member.name}</div>
-                            {member.phone && (
-                              <div className="text-xs text-muted-foreground flex items-center">
-                                <Phone className="h-3 w-3 mr-1" />
-                                {member.phone}
+                      <TeamMemberCard 
+                        member={member}
+                        onEdit={(data) => {
+                          updateMutation.mutate({ id: member.id, data });
+                        }}
+                        onDelete={(id) => {
+                          setMemberToDelete(id);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="px-4 py-3 text-left font-medium">
+                          <input 
+                            type="checkbox"
+                            checked={selectedMembers.length === filteredMembers.length && filteredMembers.length > 0}
+                            onChange={handleSelectAll}
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                        </th>
+                        <th className="px-4 py-3 text-left font-medium">Name</th>
+                        <th className="px-4 py-3 text-left font-medium">Email</th>
+                        <th className="px-4 py-3 text-left font-medium">Role</th>
+                        <th className="px-4 py-3 text-left font-medium">Department</th>
+                        <th className="px-4 py-3 text-left font-medium">Location</th>
+                        <th className="px-4 py-3 text-right font-medium">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMembers.map((member) => (
+                        <tr key={member.id} className="border-b hover:bg-muted/50">
+                          <td className="px-4 py-3">
+                            <input 
+                              type="checkbox"
+                              checked={selectedMembers.includes(member.id)}
+                              onChange={() => toggleSelectMember(member.id)}
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={member.avatar_url || undefined} alt={member.name} />
+                                <AvatarFallback>
+                                  {member.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">{member.name}</div>
+                                {member.phone && (
+                                  <div className="text-xs text-muted-foreground flex items-center">
+                                    <Phone className="h-3 w-3 mr-1" />
+                                    {member.phone}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            {member.email && (
+                              <a href={`mailto:${member.email}`} className="text-blue-600 hover:underline flex items-center">
+                                <Mail className="h-3.5 w-3.5 mr-1" />
+                                {member.email}
+                              </a>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">{member.role || "-"}</td>
+                          <td className="px-4 py-3">{member.department || "-"}</td>
+                          <td className="px-4 py-3">
+                            {member.location && (
+                              <div className="flex items-center">
+                                <MapPin className="h-3.5 w-3.5 mr-1" />
+                                {member.location}
                               </div>
                             )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        {member.email && (
-                          <a href={`mailto:${member.email}`} className="text-blue-600 hover:underline flex items-center">
-                            <Mail className="h-3.5 w-3.5 mr-1" />
-                            {member.email}
-                          </a>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">{member.role || "-"}</td>
-                      <td className="px-4 py-3">{member.department || "-"}</td>
-                      <td className="px-4 py-3">
-                        {member.location && (
-                          <div className="flex items-center">
-                            <MapPin className="h-3.5 w-3.5 mr-1" />
-                            {member.location}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => {
-                              // Open edit dialog and populate form data
-                              setFormData({ 
-                                name: member.name,
-                                email: member.email || "",
-                                role: member.role || "",
-                                avatar_url: member.avatar_url || "",
-                                phone: member.phone || "",
-                                department: member.department || "",
-                                location: member.location || "",
-                                bio: member.bio || "",
-                                status: member.status || "active"
-                              });
-                              setIsAddDialogOpen(true);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => {
-                              setMemberToDelete(member.id);
-                              setIsDeleteDialogOpen(true);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => {
+                                  // Open edit dialog and populate form data
+                                  setFormData({ 
+                                    name: member.name,
+                                    email: member.email || "",
+                                    role: member.role || "",
+                                    avatar_url: member.avatar_url || "",
+                                    phone: member.phone || "",
+                                    department: member.department || "",
+                                    location: member.location || "",
+                                    bio: member.bio || "",
+                                    status: member.status || "active"
+                                  });
+                                  setIsAddDialogOpen(true);
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => {
+                                  setMemberToDelete(member.id);
+                                  setIsDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </TabsContent>
+          
+          {/* <TabsContent value="chat" className="h-[700px]">
+            <CardHeader>
+              <CardTitle>Team Chat</CardTitle>
+              <CardDescription>
+                Chat with your team members in real-time.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-full p-0">
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <p>Loading...</p>
+                </div>
+              ) : user && session ? (
+                <TeamChat
+                  currentUser={user}
+                  teamMembers={teamMembers}
+                  authToken={session.access_token}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">
+                    Please sign in to access the team chat.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </TabsContent> */}
+        </Tabs>
       </Card>
 
       {/* Add Team Member Dialog */}

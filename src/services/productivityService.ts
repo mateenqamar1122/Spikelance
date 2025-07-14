@@ -10,16 +10,23 @@ export interface Task {
   priority: "low" | "medium" | "high" | "urgent";
   status: "not-started" | "in-progress" | "completed";
   time_estimate: number | null;
+  time_spent: number | null;
+  start_time: string | null;
+  end_time: string | null;
   created_at: string;
   updated_at: string;
   user_id: string;
   project_id?: string | null;
   tags?: string[] | null;
   related_tasks?: string[] | null;
+  dependencies?: string[] | null;
+  blocked_by?: string[] | null;
   labels?: string[] | null;
   is_recurring?: boolean;
   recurring_pattern?: string | null;
   last_updated_by?: string | null;
+  template_id?: string | null;
+  template_name?: string | null;
 }
 
 // Pomodoro Types

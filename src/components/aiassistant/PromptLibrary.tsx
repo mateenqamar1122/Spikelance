@@ -29,7 +29,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 p-2 bg-gray-100 dark:bg-gray-800/50 border-b dark:border-gray-700">
+        {/* <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 p-2 bg-gray-100 dark:bg-gray-800/50 border-b dark:border-gray-700">
           {promptCategoriesData.map((category) => (
             <Button
               key={category.name}
@@ -42,7 +42,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({
               {category.name}
             </Button>
           ))}
-        </div>
+        </div> */}
 
         <div className="p-3 max-h-[450px] overflow-y-auto">
           {(selectedCategory

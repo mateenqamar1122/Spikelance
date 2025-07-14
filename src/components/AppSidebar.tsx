@@ -4,6 +4,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
+  FileText,
   BarChart2, 
   CreditCard, 
   Briefcase, 
@@ -26,7 +27,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DashboardIcon, FolderManagementIcon, ProductivityIcon, TaskManagerIcon, SettingsIcon, AIAssistantIcon, AIContentGenerationIcon,BriefcaseIcon, ClientIcon, ProjectIcon, TeamIcon, AnalyticsIcon,DebitCardIcon, ExpenseIcon, } from '@/components/icons/custom-icons';
+import { DashboardIcon, FolderManagementIcon, ProductivityIcon, TaskManagerIcon, SettingsIcon, AIAssistantIcon, AIContentGenerationIcon,BriefcaseIcon, ClientIcon, ProjectIcon, TeamIcon, AnalyticsIcon,DebitCardIcon, ExpenseIcon, ClockIcon } from '@/components/icons/custom-icons';
 
 interface AppSidebarProps {
   isOpen: boolean;
@@ -150,6 +151,12 @@ const AppSidebar = ({ isOpen, setIsOpen }: AppSidebarProps) => {
       path: "/portfolio",
       icon: BriefcaseIcon,
     },
+    {
+      title: "Invoices",
+      path: "/invoices",
+      icon: FileText,
+    },
+    
   ];
   
   const toolsMenuItems = [
@@ -157,6 +164,12 @@ const AppSidebar = ({ isOpen, setIsOpen }: AppSidebarProps) => {
       title: "AI Assistant",
       path: "/ai-assistant",
       icon: AIAssistantIcon,
+      premium: true,
+    },
+    {
+      title: "Time Tracking",
+      path: "/tools/time-tracking",
+      icon: ClockIcon,
       premium: true,
     },
     {

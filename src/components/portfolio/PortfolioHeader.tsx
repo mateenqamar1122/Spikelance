@@ -45,7 +45,7 @@ const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
           Create and customize your professional portfolio
         </p>
       </div>
-      <div className="flex gap-2">
+      {/* <div className="flex gap-2">
         {!isPreview && (
           <Button variant="outline" onClick={onPreviewClick}>
             Preview
@@ -61,7 +61,7 @@ const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
             {portfolio.is_published ? "Update Published Version" : "Publish"}
           </Button>
         )}
-      </div>
+      </div> */}
     </div>
   );
 };

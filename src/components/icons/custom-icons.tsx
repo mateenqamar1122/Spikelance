@@ -45,6 +45,35 @@ export const DashboardIcon: React.FC<IconProps> = ({
     />
   </svg>
 );
+export const ClockIcon: React.FC<IconProps> = ({ 
+  className = "", 
+  color = "currentColor", 
+  size = 24 
+}) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    width={size} 
+    height={size} 
+    className={className}
+    fill="none"
+  >
+    <circle 
+      cx="12" 
+      cy="12" 
+      r="10" 
+      stroke={color} 
+      strokeWidth="1.7"
+    />
+    <path 
+      d="M12 8V12L14 14" 
+      stroke={color} 
+      strokeWidth="1.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 export const FolderManagementIcon: React.FC<IconProps> = ({ 
   className = "", 

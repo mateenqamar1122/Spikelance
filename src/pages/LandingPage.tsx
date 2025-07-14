@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Footer } from "@/components/ui/footer-section";
 import { FeatureOrbital } from "@/components/features/FeatureOrbital";
 import { TypewriterEffectSmooth } from "@/components/ui/typewriter-effect";
+import { FreelancerProblems } from "@/components/features/FreelancerProblems";
 
 import { useEffect, useRef } from 'react';
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
@@ -57,11 +58,17 @@ const LandingPage = () => {
       <div data-animation="fade-in-up">
       {/* Hero Section */}
       <section className="relative w-full py-12 md:py-20 lg:py-28 xl:py-32 overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/20%),transparent_25%),radial-gradient(circle_at_70%_60%,hsl(var(--secondary)/10%),transparent_25%)]"></div>
-        <div className="absolute inset-y-0 right-0 -z-10 w-[40%] bg-gradient-to-l from-primary/5 to-transparent"></div>
-        <div className="absolute top-1/4 left-0 w-64 h-64 -z-10 bg-primary/10 rounded-full blur-3xl animate-float opacity-70"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-72 h-72 -z-10 bg-brand-blue/10 rounded-full blur-3xl animate-float-delay opacity-70"></div>
+        {/* Background Elements with Enhanced Glow */}
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/30%),transparent_30%),radial-gradient(circle_at_70%_60%,hsl(var(--secondary)/20%),transparent_30%)]"></div>
+        <div className="absolute inset-y-0 right-0 -z-10 w-[40%] bg-gradient-to-l from-primary/10 to-transparent"></div>
+        <div className="absolute top-1/4 left-0 w-64 h-64 -z-10 bg-primary/20 rounded-full blur-3xl animate-float opacity-80"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-72 h-72 -z-10 bg-brand-blue/20 rounded-full blur-3xl animate-float-delay opacity-80"></div>
+        
+        {/* Star Elements */}
+        <div className="absolute top-20 right-20 w-3 h-3 bg-yellow-300 rounded-full animate-pulse opacity-80"></div>
+        <div className="absolute top-40 left-[10%] w-2 h-2 bg-yellow-200 rounded-full animate-pulse opacity-70" style={{animationDelay: '0.5s'}}></div>
+        <div className="absolute bottom-32 right-[15%] w-4 h-4 bg-yellow-300 rounded-full animate-pulse opacity-90" style={{animationDelay: '1.2s'}}></div>
+        <div className="absolute top-1/2 left-[20%] w-2 h-2 bg-yellow-200 rounded-full animate-pulse opacity-60" style={{animationDelay: '0.8s'}}></div>
         
         {/* Grid Pattern */}
         <div className="absolute inset-0 -z-10 opacity-[0.02] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
@@ -69,27 +76,32 @@ const LandingPage = () => {
         <div className="container relative px-4 md:px-6">
           <div className="max-w-4xl mx-auto text-center">
             <div className="space-y-8 relative hero-animate">
-              <div className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/20 to-brand-blue/20 backdrop-blur-sm px-5 py-2 text-sm font-medium transform hover:scale-105 transition-all duration-300 border border-primary/10 shadow-sm">
-                <span className="mr-2 text-base">✨</span>
-                <span className="bg-gradient-to-r from-primary to-brand-blue bg-clip-text text-transparent font-semibold">Your Success Journey Starts Here</span>
+              <div className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/30 to-brand-blue/30 backdrop-blur-sm px-5 py-2 text-sm font-medium transform hover:scale-105 transition-all duration-300 border border-primary/20 shadow-md relative overflow-hidden group">
+                <span className="absolute inset-0 bg-gradient-to-r from-primary/10 to-brand-blue/10 animate-pulse opacity-70"></span>
+                <span className="mr-2 text-base relative z-10">✨</span>
+                <span className="bg-gradient-to-r from-primary to-brand-blue bg-clip-text text-transparent font-bold relative z-10">Your Success Journey Starts Here</span>
+                <span className="absolute -right-1 -top-1 w-6 h-6 bg-yellow-300/30 rounded-full blur-sm animate-pulse"></span>
               </div>
               
-              <h1 className="text-4xl font-bold tracking-tighter sm:text-6xl xl:text-7xl/none">
-                <span className="inline-block mb-2">Manage Your</span>
-                <br className="hidden sm:block" />
+              <h1 className="text-4xl font-extrabold tracking-tighter sm:text-6xl xl:text-7xl/none font-heading">
+                <span className="inline-block mb-2 text-shadow-sm"><h1 className="fontWeight-black">Manage Your</h1></span>
+                {/* <br className="hidden sm:block" /> */}
                 <span className="relative">
-                  <span className="bg-gradient-to-r from-brand-cyan via-primary to-brand-blue bg-clip-text text-transparent drop-shadow-sm">
+                  <span className="bg-gradient-to-r from-brand-cyan via-primary to-brand-blue bg-clip-text text-transparent drop-shadow-lg font-black">
                     Freelance Business
                   </span>
-                  <span className="absolute -bottom-1.5 left-0 w-full h-1 bg-gradient-to-r from-brand-cyan via-primary to-brand-blue rounded-full opacity-70 blur-sm"></span>
+                  <span className="absolute -bottom-1.5 left-0 w-full h-1.5 bg-gradient-to-r from-brand-cyan via-primary to-brand-blue rounded-full opacity-80 blur-sm"></span>
+                  {/* Glow effect behind text */}
+                  <span className="absolute -inset-1 bg-gradient-to-r from-brand-cyan/20 via-primary/20 to-brand-blue/20 filter blur-xl opacity-70 -z-10 rounded-lg"></span>
                 </span>
-                <br className="hidden sm:block" />
-                <span className="inline-block mt-2">with Confidence</span>
+                {/* <br className="hidden sm:block" /> */}
+                <span className="inline-block mt-2 text-shadow-sm">with Confidence</span>
               </h1>
               
-              <p className="text-muted-foreground text-lg md:text-xl leading-relaxed max-w-3xl mx-auto">
-                The all-in-one platform for freelancers to manage clients, projects, invoicing, and more. 
-                <span className="hidden md:inline"><br /></span> Stay organized, get paid faster, and grow your business.
+              <p className="text-muted-foreground text-lg md:text-xl leading-relaxed max-w-3xl mx-auto font-medium relative">
+                <span className="relative z-10">The all-in-one <span className="font-bold text-foreground">premium platform</span> for freelancers to manage clients, projects, invoicing, and more.</span>
+                <span className="hidden md:inline"><br /></span> <span className="relative z-10">Stay organized, <span className="font-bold text-foreground">get paid faster</span>, and grow your business with confidence.</span>
+                <span className="absolute -inset-4 bg-gradient-to-r from-primary/5 via-transparent to-brand-blue/5 filter blur-lg opacity-50 -z-10 rounded-xl"></span>
               </p>
             </div>
             
@@ -97,56 +109,69 @@ const LandingPage = () => {
               <Button 
                 asChild 
                 size="lg" 
-                className="relative overflow-hidden bg-gradient-to-r from-brand-cyan to-brand-blue shadow-xl hover:shadow-brand-blue/30 hover:scale-105 transition-all duration-300 rounded-full px-8 py-6 text-lg font-medium"
+                className="relative overflow-hidden bg-gradient-to-r from-brand-cyan to-brand-blue shadow-xl hover:shadow-brand-blue/50 hover:scale-105 transition-all duration-300 rounded-full px-8 py-6 text-lg font-bold group"
               >
                 <Link to="/auth">
                   <span className="relative z-10 flex items-center">
                     Get Started Free
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
                   </span>
                   <span className="absolute inset-0 overflow-hidden rounded-full">
                     <span className="absolute inset-0 rounded-full bg-white/10 transform translate-y-full transition-transform duration-500 ease-out group-hover:translate-y-0"></span>
                   </span>
+                  {/* Premium glow effect */}
+                  <span className="absolute -inset-1 bg-gradient-to-r from-brand-cyan/40 to-brand-blue/40 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></span>
                 </Link>
               </Button>
               
-              <Button 
+              {/* <Button 
                 asChild 
                 variant="outline" 
                 size="lg" 
-                className="hover:bg-primary/5 hover:border-primary/30 transition-all duration-300 hover:scale-105 rounded-full px-8 py-6 text-lg font-medium border-2"
+                className="hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 hover:scale-105 rounded-full px-8 py-6 text-lg font-bold border-2 relative group"
               >
                 <Link to="/features" className="flex items-center">
-                  Learn More
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 opacity-70" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                </Link>
-              </Button>
+                  <span className="relative z-10 flex items-center">
+                    Learn More
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 opacity-80 group-hover:translate-x-1 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                  {/* Premium glow effect */}
+                  <span className="absolute -inset-1 bg-gradient-to-r from-primary/10 to-brand-blue/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 rounded-full"></span>
+                {/* </Link>
+              </Button> */} 
             </div>
             
             <div className="flex items-center gap-4 text-muted-foreground justify-center mt-12 hero-animate">
-              <div className="flex -space-x-4">
+              <div className="flex -space-x-4 relative">
+                {/* Premium glow behind avatars */}
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-brand-blue/20 filter blur-xl opacity-50 -z-10 rounded-full w-full h-full transform scale-150"></div>
+                
                 {[1, 2, 3, 4].map((i) => (
                   <div 
                     key={i} 
-                    className="h-12 w-12 rounded-full border-2 border-background bg-gradient-to-br from-muted to-muted/80 shadow-inner transform hover:scale-110 hover:z-10 transition-all duration-300 flex items-center justify-center text-xs font-semibold"
+                    className="h-12 w-12 rounded-full border-2 border-background bg-gradient-to-br from-muted to-muted/80 shadow-md transform hover:scale-110 hover:z-10 transition-all duration-300 flex items-center justify-center text-xs font-bold relative group"
                     style={{ zIndex: 5 - i }}
                   >
                     {['JD', 'SM', 'AK', 'TR'][i-1]}
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/10 to-brand-blue/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                   </div>
                 ))}
               </div>
-              <div className="flex flex-col items-start">
+              <div className="flex flex-col items-start relative">
+                {/* Premium glow behind stars */}
+                <div className="absolute inset-0 bg-yellow-300/20 filter blur-md opacity-50 -z-10 rounded-lg w-full h-full transform scale-110"></div>
+                
                 <div className="flex items-center">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <svg key={star} xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFD700" strokeWidth="1" className="mr-1">
+                    <svg key={star} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFD700" strokeWidth="1" className="mr-1 drop-shadow-md animate-pulse" style={{animationDuration: `${1 + star * 0.2}s`}}>
                       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                     </svg>
                   ))}
-                  <span className="ml-1 text-sm font-semibold">4.9/5</span>
+                  <span className="ml-1 text-sm font-extrabold">4.9/5</span>
                 </div>
                 <p className="text-sm font-medium">Join 10,000+ freelancers already growing their business</p>
               </div>
@@ -181,7 +206,7 @@ const LandingPage = () => {
           <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
             <div className="space-y-2">
               <div className="inline-block rounded-lg bg-primary px-3 py-1 text-sm text-white">By The Numbers</div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Trusted by Freelancers Worldwide</h2>
+              <h2 className="text-3xl fontWeight-black tracking-tighter sm:text-5xl">Trusted by Freelancers Worldwide</h2>
               <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                 See why thousands of freelancers choose our platform to grow their business
               </p>
@@ -211,6 +236,11 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Freelancer Problems Section */}
+      <div data-animation="fade-in-up">
+        <FreelancerProblems />
+      </div>
       </div>
       {/* Testimonials Section */}
       <section className="w-full py-12 md:py-24 lg:py-32 bg-background scroll-animate">
